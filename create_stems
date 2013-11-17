@@ -1,0 +1,26 @@
+#! /usr/bin/env bash
+
+sed -E "s/^(.{6})(\w+)$/\1@ \1\2/" fr_winedt.txt | awk '
+{
+    split($1,w,"@")
+    if (stems[w[1]] == ""){
+        # there is a subtle bug here: arrête is six letters but it is more frequent than arrêtement, etc., so no @
+        stems[w[1]] = $1
+    }
+    if (words[w[1]] == ""){
+        if ($2 != ""){
+            words[w[1]] = $2
+        } else {
+            words[w[1]] = w[1]
+        }
+    }
+}
+END{
+for( stem in stems) {
+    print stems[stem], words[stem]
+}
+}' | sort -rgk2 > fr_winedt_stems.tmp
+remove_diacritics(){
+    tr "àâéèêëïîôû" "aaeeeeiiou"
+}
+paste fr_winedt_stems.tmp <(cut -d" " -f2 fr_winedt_stems.tmp | remove_diacritics) | sed -E "s/\t/ /g" > fr_winedt_stems.txt

@@ -1,0 +1,117 @@
+
+# é (accent aigu)
+# let's cut words at 6 characters and when this happens, replace with ellipses
+
+grep "^é" fr_winedt.txt | cut -c1-6 | sort -u W
+
+stem(){
+    sed -E "s/(.{$1}).+/\1@/" | awk '
+    {
+        split($1,w,"@")
+        words[w[1]]=$1
+    }
+    END{
+    for( word in words) {
+        print words[word]
+    }
+    }' | sort -u
+}
+
+stem_with_counts(){
+    sed -E "s/(.{$1}).+/\1@/" | awk '
+    {
+        split($1,w,"@")
+        words[w[1]] = $1
+        counts[w[1]] += 1
+    }
+    END{
+    for( word in words) {
+        print words[word], counts[word]
+    }
+    }' | sort
+}
+
+(echo ccccccccccc; echo a; echo b; echo ccccccccccc; echo c; echo a) | stem_with_counts 5
+
+grep "^é" fr_winedt.txt | stem 6 L > words_start_e_aigu_6.txt
+
+grep "^e" fr_winedt.txt | stem 6 L > words_start_e_muet_6.txt
+stem_length=4; grep "^e" fr_winedt.txt | stem_with_counts $stem_length L > words_start_e_muet_${stem_length}.txt
+
+stem_length=6; grep ".+(é.*[^es]+$)" fr_winedt.txt | stem_with_counts $stem_length L > words_with_e_aigu${stem_length}.txt
+
+# I would like to order these lists based on frequency of usage
+
+# let's create a stem frequency list
+./create_frequency_stems # fr_frequency_stems.txt format: stem frequency most_frequent_original most_frequent_stripped
+
+# what is the most common letter when é appears in second position?
+awk '$3 ~ "^.é" && $2 > 500 {print $3}' fr_frequency_stems.txt | cut -c1 | sort | uniq -c | sort -k1gr
+# 113 d # 37%
+#  64 r # 20%
+#  20 m
+#  16 p
+#  16 s
+#  10 h
+awk '$3 ~ "^ré" && $2 > 500 {print $2, $3}' fr_frequency_stems.txt | sort -k1,1nr
+
+# Holy Molly, dé and ré words make up 60% of words with é in the second position. Let's see what they are.
+awk '$3 ~ "^dé" && $2 > 500 {print $2, $3}' fr_frequency_stems.txt | sort -k1,1nr | wc -l # 113
+awk '$3 ~ "^de" && $2 > 500 {print $2, $3}' fr_frequency_stems.txt | sort -k1,1nr | wc -l # 64
+awk '$3 ~ "^ré" && $2 > 500 {print $2, $3}' fr_frequency_stems.txt | sort -k1,1nr | wc -l # 64
+awk '$3 ~ "^re" && $2 > 500 {print $2, $3}' fr_frequency_stems.txt | sort -k1,1nr | wc -l # 155
+# dé is twice more common than de, but re is twice more common than ré
+
+# now we can use it to sort words by their importance
+grep -E "^é" fr_frequency_stems.txt  > words_start_e_aigu_frequency.txt
+grep -E ".+é" fr_frequency_stems.txt | grep -vE "é@? |és@? |ée@? |ées@? "  > words_with_middle_e_aigu_frequency.txt
+grep -E "é.e" fr_frequency_stems.txt > words_with_e_aigu_and_e_muet_frequency.txt
+grep -E "é.é" fr_frequency_stems.txt > words_with_two_e_aigu_frequency.txt
+grep -E "é.è" fr_frequency_stems.txt > words_with_e_aigu_and_e_grave_frequency.txt
+grep -E "^[drmpstlbvhnfgkcjz][eéèê]\w+" fr_frequency_stems.txt > words_with_e_in_second_letter_frequency.txt
+
+grep -E "é" fr_frequency_stems.txt > words_with_e_aigu_frequency.txt
+grep -E "è" fr_frequency_stems.txt > words_with_e_grave_frequency.txt
+grep -E "ê" fr_frequency_stems.txt > words_with_e_circumflex_frequency.txt
+grep -E "î" fr_frequency_stems.txt > words_with_i_circumflex_frequency.txt
+grep -E "ï" fr_frequency_stems.txt > words_with_i_trema_frequency.txt
+grep -E "û" fr_frequency_stems.txt > words_with_u_circumflex_frequency.txt
+grep -E "ô" fr_frequency_stems.txt > words_with_o_circumflex_frequency.txt
+grep -E "â" fr_frequency_stems.txt > words_with_a_circumflex_frequency.txt
+
+
+# let's create a game that
+### DONE
+# takes words above a given frequency from each list
+# strips them of accents
+# asks and reads input (enter means, no accents)
+# replies if correct or not
+# allow partial matching of word
+# allows multiple answers (space separated, but one is enough) ex: réalise réaliser réalisé
+
+### TODO
+
+# keep stats words learned and failed, and starts with those on re-play
+    # remembers which ones you got right and doesn't ask them during the same game
+    # output summary (left column words wrong, right column words right?)
+    # re-ask wrong words
+    # info: number of words learned (stats at beginning and end)
+    # if incorrect, it will ask again
+    # keeps score
+        # streaks?
+
+# allow custom input lists
+# make sure there is at least one vowel in the answer?
+# can't keep playing after 10 wrong?
+# commands
+    # go to menu (start in menu by default)
+    # new profile
+    # add mnemonic
+    # choose game (file)
+    # arrow navigating - previous words (with attempts and answers)
+    # shows definition
+    # edit the original file ?
+
+
+
+# french frequency words: http://invokeit.wordpress.com/frequency-word-lists/

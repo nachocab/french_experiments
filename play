@@ -1,0 +1,39 @@
+#! /usr/bin/env zsh
+
+INPUT_FILE="words_with_e_in_second_letter_frequency.txt"
+# INPUT_FILE="tmp"
+WORDS="_current_words.tmp"
+NUM_WORDS=$(wc -l $WORDS)
+
+prepare_words(){
+    awk -v min_frequency=$1 '$2 > min_frequency {print $2, $3, $4}' $INPUT_FILE | \
+    shuf > $WORDS
+}
+
+get_question(){
+    echo $1 | remove_diacritics
+}
+
+prepare_words 1000
+
+while read line ; do
+
+    word=(${=line})
+
+    question=${word[3]}
+    frequency=${word[1]}
+    answer=${word[2]}
+
+    set -A answers $(awk -v question=$question '$3 == question {print $2}' $WORDS)
+
+    attempt=
+    vared -cap "$question ($frequency) => " attempt
+
+    regex="${attempt}*" # I wanted to use ^ and it works in command line, but not through script
+    if [[ ($attempt != "" && ${answers[(i)${regex}]} -le ${#answers} ) || \
+          ($attempt == "" && $question == $answer) ]]; then
+        echo "Correct (${(j., .)answers})"
+    else
+        echo "Nope (${(j., .)answers})"
+    fi
+done < $WORDS
