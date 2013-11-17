@@ -115,3 +115,25 @@ grep -E "â" fr_frequency_stems.txt > words_with_a_circumflex_frequency.txt
 
 
 # french frequency words: http://invokeit.wordpress.com/frequency-word-lists/
+
+
+
+
+# the é in intérior or matériel is incredibly difficult for french learners, much harder than the é in année or côté, mainly because it comes in the middle, we have nothing to hold on to, the rules are not clear. Let's solve it with data mining.
+
+# dé is twice more likely than de, when in doubt dé and re (mots de répéter s'ecrivent sans é)
+
+# te is almost 10x more likely than té (only témoin and télé words), mainly because it rarely appears at the end of the syllable, since it is often followed by an **n**, **m**, **s**, and double consonants rr ll (terrible, tellement,
+
+# le secret du secrétaire
+
+# study them in groups célébrer is better in é.é than in ^.é because it is more noticeable
+
+# véhicule + vélo
+# supérieur + inférieur
+
+# té => télé and témoin, ténèbres
+
+# learn them in pairs: témoin pas terrible (pas so you remember which one isn't é)
+
+# no rules => some you just have to memorize: appétit, témoin, fréquence (learn them together)
